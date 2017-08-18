@@ -1,66 +1,56 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<title>Xterm</title>
-	<link rel="stylesheet" href="/main.css" />
-	<link rel="stylesheet" href="/xterm.js/src/xterm.css" />
-	<link rel="stylesheet" href="/xterm.js/addons/fullscreen/fullscreen.css" />
-</head>
-<body>
-	<div id="xterm"></div>
+<!doctype html>
+<html>
+    <head>
+        <title>xterm.js demo</title>
+        <link rel="stylesheet" href="/xterm.js/xterm.css" />
+        <link rel="stylesheet" href="/xterm.js/addons/fullscreen/fullscreen.css" />
+        <link rel="stylesheet" href="style.css" />
+      	<script src="fetch.min.js"></script>
+        <script src="/xterm.js/xterm.js" ></script>
+        <script src="/xterm.js/addons/attach/attach.js" ></script>
+        <script src="/xterm.js/addons/fit/fit.js" ></script>
+        <script src="/xterm.js/addons/fullscreen/fullscreen.js" ></script>
+    </head>
+    <body>
 
-	<script src="/xterm.js/src/xterm.js" ></script>
-	<script src="/xterm.js/addons/fit/fit.js" ></script>
-	<script src="/xterm.js/addons/fullscreen/fullscreen.js" ></script>
-	<script>
-	var term;
-	var websocket = new WebSocket("ws://" + window.location.hostname + ":" + window.location.port + "/term");
-	websocket.binaryType = "arraybuffer";
-
-	function ab2str(buf) {
-		return String.fromCharCode.apply(null, new Uint8Array(buf));
-	}
-
-	websocket.onopen = function(evt) {
-		term = new Terminal({
-			screenKeys: true,
-			useStyle: true,
-			cursorBlink: true,
-		});
-
-		term.on('data', function(data) {
-			websocket.send(new TextEncoder().encode("\x00" + data));
-		});
-
-		term.on('resize', function(evt) {
-			websocket.send(new TextEncoder().encode("\x01" + JSON.stringify({cols: evt.cols, rows: evt.rows})))
-		});
-
-		term.on('title', function(title) {
-			document.title = title;
-		});
-
-		term.open(document.getElementById('xterm'));
-			term.fit();
-			websocket.onmessage = function(evt) {
-			if (evt.data instanceof ArrayBuffer) {
-				term.write(ab2str(evt.data));
-			} else {
-				alert(evt.data)
-			}
-		}
-
-		websocket.onclose = function(evt) {
-			term.write("Session terminated");
-			term.destroy();
-		}
-
-		websocket.onerror = function(evt) {
-			if (typeof console.log == "function") {
-				console.log(evt)
-			}
-		}
-	}
-	</script>
-</body>
+        <h1>xterm.js: xterm, in the browser</h1>
+        <div id="terminal-container"></div>
+        <div>
+          <h2>Options</h2>
+          <p>
+            <label><input type="checkbox" id="option-cursor-blink"> cursorBlink</label>
+          </p>
+          <p>
+            <label>
+              cursorStyle
+              <select id="option-cursor-style">
+                <option value="block">block</option>
+                <option value="underline">underline</option>
+                <option value="bar">bar</option>
+              </select>
+            </label>
+          </p>
+          <p>
+            <label>scrollback <input type="number" id="option-scrollback" value="1000" /></label>
+          </p>
+          <p>
+            <label>tabStopWidth <input type="number" id="option-tabstopwidth" value="8" /></label>
+          </p>
+          <div>
+          	<h3>Size</h3>
+            <div>
+              <div style="display: inline-block; margin-right: 16px;">
+                <label for="cols">Columns</label>
+                <input type="number" id="cols" />
+              </div>
+              <div style="display: inline-block; margin-right: 16px;">
+                <label for="rows">Rows</label>
+                <input type="number" id="rows" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <p><strong>Attention:</strong> The demo is a barebones implementation and is designed for xterm.js evaluation purposes only. Exposing the demo to the public as is would introduce security risks for the host.</p>
+        <script src="main.js" defer ></script>
+    </body>
 </html>

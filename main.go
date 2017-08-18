@@ -37,7 +37,8 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cmd := exec.Command("/bin/bash", "-l")
+	cmd := exec.Command("/run/current-system/sw/bin/fish")
+  ///usr/bin/env", "bash", "-l")
 	cmd.Env = append(os.Environ(), "TERM=xterm")
 
 	tty, err := pty.Start(cmd)
